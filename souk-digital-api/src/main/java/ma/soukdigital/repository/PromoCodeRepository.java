@@ -1,5 +1,6 @@
 ﻿package ma.soukdigital.repository;
 
+import ma.soukdigital.entity.PromoCode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,6 +14,7 @@ public interface PromoCodeRepository extends JpaRepository<PromoCode, UUID> {
 
     Optional<PromoCode> findByCodeIgnoreCaseAndIsActiveTrue(String code);
 }
+
 
 
 

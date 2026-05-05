@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ══════════════════════════════════════════════════════════
+         001 — Initial Schema
+         ══════════════════════════════════════════════════════════ -->
+
+    <changeSet id="001-create-users" author="soukdigital">
+        <createTable tableName="users">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="last_name"  type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="email"      type="VARCHAR(255)"><constraints unique="true"/></column>
+            <column name="phone"      type="VARCHAR(20)"><constraints unique="true"/></column>
+            <column name="password_hash" type="VARCHAR(255)"/>
+            <column name="role"       type="VARCHAR(20)" defaultValue="BUYER"><constraints nullable="false"/></column>
+            <column name="is_verified" type="BOOLEAN"   defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="avatar_url" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()"><constraints nullable="false"/></column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()"><constraints nullable="false"/></column>
+        </createTable>
+        <sql>ALTER TABLE users ADD CONSTRAINT chk_users_role CHECK (role IN ('BUYER','VENDOR','ADMIN'))</sql>
+        <createIndex tableName="users" indexName="idx_users_email"><column name="email"/></createIndex>
+        <createIndex tableName="users" indexName="idx_users_phone"><column name="phone"/></createIndex>
+    </changeSet>
+
+    <changeSet id="001-create-vendors" author="soukdigital">
+        <createTable tableName="vendors">
+            <column name="id"              type="UUID" defaultValueComputed="gen_random_uuid()"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="user_id"         type="UUID"><constraints nullable="false" foreignKeyName="fk_vendors_user" references="users(id)" deleteCascade="true"/></column>
+            <column name="name"            type="VARCHAR(200)"><constraints nullable="false"/></column>
+            <column name="name_ar"         type="VARCHAR(200)"/>
+            <column name="slug"            type="VARCHAR(200)"><constraints unique="true" nullable="false"/></column>
+            <column name="city"            type="VARCHAR(100)"/>
+            <column name="description"     type="TEXT"/>
+            <column name="description_ar"  type="TEXT"/>
+            <column name="avatar_url"      type="TEXT"/>
+            <column name="banner_url"      type="TEXT"/>
+            <column name="is_artisan"      type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="is_verified"     type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="commission_rate" type="DECIMAL(5,2)" defaultValueNumeric="10.00"/>
+            <column name="rating"          type="DECIMAL(3,2)" defaultValueNumeric="0"/>
+            <column name="review_count"    type="INT"    defaultValueNumeric="0"/>
+            <column name="product_count"   type="INT"    defaultValueNumeric="0"/>
+            <column name="follower_count"  type="INT"    defaultValueNumeric="0"/>
+            <column name="member_since"    type="DATE"   defaultValueComputed="CURRENT_DATE"/>
+            <column name="created_at"      type="TIMESTAMPTZ" defaultValueComputed="NOW()"><constraints nullable="false"/></column>
+        </createTable>
+        <createIndex tableName="vendors" indexName="idx_vendors_slug"><column name="slug"/></createIndex>
+        <createIndex tableName="vendors" indexName="idx_vendors_user_id"><column name="user_id"/></createIndex>
+    </changeSet>
+
+    <changeSet id="001-create-categories" author="soukdigital">
+        <createTable tableName="categories">
+            <column name="id"        type="UUID" defaultValueComputed="gen_random_uuid()"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="name"      type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="name_ar"   type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="slug"      type="VARCHAR(100)"><constraints unique="true" nullable="false"/></column>
+            <column name="emoji"     type="VARCHAR(10)"/>
+            <column name="image_url" type="TEXT"/>
+            <column name="parent_id" type="UUID"><constraints foreignKeyName="fk_categories_parent" references="categories(id)"/></column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="is_active"  type="BOOLEAN" defaultValueBoolean="true"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="001-create-products" author="soukdigital">
+        <createTable tableName="products">
+            <column name="id"             type="UUID" defaultValueComputed="gen_random_uuid()"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="vendor_id"      type="UUID"><constraints nullable="false" foreignKeyName="fk_products_vendor" references="vendors(id)" deleteCascade="true"/></column>
+            <column name="category_id"    type="UUID"><constraints foreignKeyName="fk_products_category" references="categories(id)"/></column>
+            <column name="name"           type="VARCHAR(300)"><constraints nullable="false"/></column>
+            <column name="name_ar"        type="VARCHAR(300)"><constraints nullable="false"/></column>
+            <column name="slug"           type="VARCHAR(300)"><constraints unique="true" nullable="false"/></column>
+            <column name="description"    type="TEXT"/>
+            <column name="description_ar" type="TEXT"/>
+            <column name="price"          type="DECIMAL(10,2)"><constraints nullable="false"/></column>
+            <column name="original_price" type="DECIMAL(10,2)"/>
+            <column name="stock_count"    type="INT" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="badge"          type="VARCHAR(20)"/>
+            <column name="city"           type="VARCHAR(100)"/>
+            <column name="free_delivery"  type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="is_active"      type="BOOLEAN" defaultValueBoolean="true"><constraints nullable="false"/></column>
+            <column name="rating"         type="DECIMAL(3,2)" defaultValueNumeric="0"/>
+            <column name="review_count"   type="INT" defaultValueNumeric="0"/>
+            <column name="created_at"     type="TIMESTAMPTZ" defaultValueComputed="NOW()"><constraints nullable="false"/></column>
+            <column name="updated_at"     type="TIMESTAMPTZ" defaultValueComputed="NOW()"><constraints nullable="false"/></column>
+        </createTable>
+        <sql>ALTER TABLE products ADD CONSTRAINT chk_products_badge CHECK (badge IN ('artisan','sale','new','top','flash') OR badge IS NULL)</sql>
+        <createIndex tableName="products" indexName="idx_products_slug"><column name="slug"/></createIndex>
+        <createIndex tableName="products" indexName="idx_products_vendor_id"><column name="vendor_id"/></createIndex>
+        <createIndex tableName="products" indexName="idx_products_category_id"><column name="category_id"/></createIndex>
+        <createIndex tableName="products" indexName="idx_products_is_active"><column name="is_active"/></createIndex>
+    </changeSet>
+
+    <changeSet id="001-create-product-images" author="soukdigital">
+        <createTable tableName="product_images">
+            <column name="id"         type="UUID" defaultValueComputed="gen_random_uuid()"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id" type="UUID"><constraints nullable="false" foreignKeyName="fk_product_images_product" references="products(id)" deleteCascade="true"/></column>
+            <column name="url"        type="TEXT"><constraints nullable="false"/></column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="001-create-orders" author="soukdigital">
+        <createTable tableName="orders">
+            <column name="id"                  type="UUID" defaultValueComputed="gen_random_uuid()"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="buyer_id"            type="UUID"><constraints nullable="false" foreignKeyName="fk_orders_buyer" references="users(id)"/></column>
+            <column name="status"              type="VARCHAR(30)" defaultValue="PENDING"><constraints nullable="false"/></column>
+            <column name="payment_method"      type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="payment_status"      type="VARCHAR(20)" defaultValue="PENDING"><constraints nullable="false"/></column>
+            <column name="subtotal"            type="DECIMAL(10,2)"><constraints nullable="false"/></column>
+            <column name="discount_amount"     type="DECIMAL(10,2)" defaultValueNumeric="0"/>
+            <column name="delivery_fee"        type="DECIMAL(10,2)" defaultValueNumeric="0"/>
+            <column name="total"               type="DECIMAL(10,2)"><constraints nullable="false"/></column>
+            <column name="promo_code"          type="VARCHAR(50)"/>
+            <column name="tracking_number"     type="VARCHAR(100)"/>
+            <column name="notes"               type="TEXT"/>
+            <column name="delivery_first_name" type="VARCHAR(100)"/>
+            <column name="delivery_last_name"  type="VARCHAR(100)"/>
+            <column name="delivery_phone"      type="VARCHAR(20)"/>
+            <column name="delivery_street"     type="TEXT"/>
+            <column name="delivery_city"       type="VARCHAR(100)"/>
+            <column name="delivery_zip"        type="VARCHAR(20)"/>
+            <column name="created_at"          type="TIMESTAMPTZ" defaultValueComputed="NOW()"><constraints nullable="false"/></column>
+            <column name="updated_at"          type="TIMESTAMPTZ" defaultValueComputed="NOW()"><constraints nullable="false"/></column>
+        </createTable>
+        <sql>ALTER TABLE orders ADD CONSTRAINT chk_orders_status CHECK (status IN ('PENDING','CONFIRMED','PROCESSING','SHIPPED','DELIVERED','CANCELLED','REFUNDED'))</sql>
+        <sql>ALTER TABLE orders ADD CONSTRAINT chk_orders_payment_method CHECK (payment_method IN ('COD','CARD_CMI','MOBILE','TRANSFER'))</sql>
+        <sql>ALTER TABLE orders ADD CONSTRAINT chk_orders_payment_status CHECK (payment_status IN ('PENDING','PAID','FAILED','REFUNDED'))</sql>
+        <createIndex tableName="orders" indexName="idx_orders_buyer_id"><column name="buyer_id"/></createIndex>
+        <createIndex tableName="orders" indexName="idx_orders_status"><column name="status"/></createIndex>
+    </changeSet>
+
+    <changeSet id="001-create-order-items" author="soukdigital">
+        <createTable tableName="order_items">
+            <column name="id"            type="UUID" defaultValueComputed="gen_random_uuid()"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="order_id"      type="UUID"><constraints nullable="false" foreignKeyName="fk_order_items_order" references="orders(id)" deleteCascade="true"/></column>
+            <column name="product_id"    type="UUID"><constraints nullable="false" foreignKeyName="fk_order_items_product" references="products(id)"/></column>
+            <column name="vendor_id"     type="UUID"><constraints nullable="false" foreignKeyName="fk_order_items_vendor" references="vendors(id)"/></column>
+            <column name="product_name"  type="VARCHAR(300)"><constraints nullable="false"/></column>
+            <column name="product_image" type="TEXT"/>
+            <column name="price"         type="DECIMAL(10,2)"><constraints nullable="false"/></column>
+            <column name="quantity"      type="INT"><constraints nullable="false"/></column>
+            <column name="subtotal"      type="DECIMAL(10,2)"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="001-create-addresses" author="soukdigital">
+        <createTable tableName="addresses">
+            <column name="id"         type="UUID" defaultValueComputed="gen_random_uuid()"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="user_id"    type="UUID"><constraints nullable="false" foreignKeyName="fk_addresses_user" references="users(id)" deleteCascade="true"/></column>
+            <column name="label"      type="VARCHAR(50)"/>
+            <column name="first_name" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="last_name"  type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="phone"      type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="street"     type="TEXT"><constraints nullable="false"/></column>
+            <column name="city"       type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="zip_code"   type="VARCHAR(20)"/>
+            <column name="is_default" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="001-create-reviews" author="soukdigital">
+        <createTable tableName="reviews">
+            <column name="id"                   type="UUID" defaultValueComputed="gen_random_uuid()"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="product_id"           type="UUID"><constraints nullable="false" foreignKeyName="fk_reviews_product" references="products(id)" deleteCascade="true"/></column>
+            <column name="user_id"              type="UUID"><constraints nullable="false" foreignKeyName="fk_reviews_user" references="users(id)"/></column>
+            <column name="order_id"             type="UUID"><constraints foreignKeyName="fk_reviews_order" references="orders(id)"/></column>
+            <column name="rating"               type="SMALLINT"><constraints nullable="false"/></column>
+            <column name="comment"              type="TEXT"/>
+            <column name="is_verified_purchase" type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="created_at"           type="TIMESTAMPTZ" defaultValueComputed="NOW()"><constraints nullable="false"/></column>
+        </createTable>
+        <sql>ALTER TABLE reviews ADD CONSTRAINT chk_reviews_rating CHECK (rating BETWEEN 1 AND 5)</sql>
+        <addUniqueConstraint tableName="reviews" columnNames="product_id,user_id" constraintName="uq_reviews_product_user"/>
+    </changeSet>
+
+    <changeSet id="001-create-promo-codes" author="soukdigital">
+        <createTable tableName="promo_codes">
+            <column name="id"               type="UUID" defaultValueComputed="gen_random_uuid()"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="code"             type="VARCHAR(50)"><constraints unique="true" nullable="false"/></column>
+            <column name="discount_percent" type="DECIMAL(5,2)"><constraints nullable="false"/></column>
+            <column name="max_uses"         type="INT"/>
+            <column name="used_count"       type="INT" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="expires_at"       type="TIMESTAMPTZ"/>
+            <column name="is_active"        type="BOOLEAN" defaultValueBoolean="true"><constraints nullable="false"/></column>
+            <column name="created_at"       type="TIMESTAMPTZ" defaultValueComputed="NOW()"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="001-create-otp-codes" author="soukdigital">
+        <createTable tableName="otp_codes">
+            <column name="id"         type="UUID" defaultValueComputed="gen_random_uuid()"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="phone"      type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="code"       type="VARCHAR(6)"><constraints nullable="false"/></column>
+            <column name="expires_at" type="TIMESTAMPTZ"><constraints nullable="false"/></column>
+            <column name="used"       type="BOOLEAN" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()"><constraints nullable="false"/></column>
+        </createTable>
+        <createIndex tableName="otp_codes" indexName="idx_otp_phone"><column name="phone"/></createIndex>
+    </changeSet>
+
+    <changeSet id="001-create-payment-transactions" author="soukdigital">
+        <createTable tableName="payment_transactions">
+            <column name="id"           type="UUID" defaultValueComputed="gen_random_uuid()"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="order_id"     type="UUID"><constraints nullable="false" foreignKeyName="fk_payment_order" references="orders(id)"/></column>
+            <column name="provider"     type="VARCHAR(30)"><constraints nullable="false"/></column>
+            <column name="provider_ref" type="VARCHAR(200)"/>
+            <column name="amount"       type="DECIMAL(10,2)"><constraints nullable="false"/></column>
+            <column name="status"       type="VARCHAR(20)"><constraints nullable="false"/></column>
+            <column name="raw_response" type="TEXT"/>
+            <column name="created_at"   type="TIMESTAMPTZ" defaultValueComputed="NOW()"><constraints nullable="false"/></column>
+        </createTable>
+        <sql>ALTER TABLE payment_transactions ADD CONSTRAINT chk_payment_provider CHECK (provider IN ('CMI','MOBILE','COD','TRANSFER'))</sql>
+        <sql>ALTER TABLE payment_transactions ADD CONSTRAINT chk_payment_status CHECK (status IN ('PENDING','SUCCESS','FAILED'))</sql>
+    </changeSet>
+
+</databaseChangeLog>

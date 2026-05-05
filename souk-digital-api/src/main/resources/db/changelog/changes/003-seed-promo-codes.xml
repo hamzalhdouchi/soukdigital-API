@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ══════════════════════════════════════════════════════════
+         003 — Seed: Promo Codes (matches frontend Zustand store)
+         ══════════════════════════════════════════════════════════ -->
+
+    <changeSet id="003-seed-promo-codes" author="soukdigital">
+        <insert tableName="promo_codes">
+            <column name="code"             value="SOUK10"/>
+            <column name="discount_percent" valueNumeric="10.00"/>
+            <column name="is_active"        valueBoolean="true"/>
+        </insert>
+        <insert tableName="promo_codes">
+            <column name="code"             value="ARTISAN20"/>
+            <column name="discount_percent" valueNumeric="20.00"/>
+            <column name="is_active"        valueBoolean="true"/>
+        </insert>
+        <insert tableName="promo_codes">
+            <column name="code"             value="BIENVENUE15"/>
+            <column name="discount_percent" valueNumeric="15.00"/>
+            <column name="max_uses"         valueNumeric="1000"/>
+            <column name="is_active"        valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

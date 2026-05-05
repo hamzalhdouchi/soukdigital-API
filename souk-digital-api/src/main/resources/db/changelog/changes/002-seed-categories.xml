@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- ══════════════════════════════════════════════════════════
+         002 — Seed: 6 Moroccan Categories
+         ══════════════════════════════════════════════════════════ -->
+
+    <changeSet id="002-seed-categories" author="soukdigital">
+        <insert tableName="categories">
+            <column name="name"      value="Artisanat"/>
+            <column name="name_ar"   value="الصناعة التقليدية"/>
+            <column name="slug"      value="artisanat"/>
+            <column name="emoji"     value="🏺"/>
+            <column name="image_url" value="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400"/>
+            <column name="sort_order" valueNumeric="1"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name"      value="Mode &amp; Textile"/>
+            <column name="name_ar"   value="الموضة والنسيج"/>
+            <column name="slug"      value="mode"/>
+            <column name="emoji"     value="👗"/>
+            <column name="image_url" value="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400"/>
+            <column name="sort_order" valueNumeric="2"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name"      value="Beauté"/>
+            <column name="name_ar"   value="الجمال"/>
+            <column name="slug"      value="beaute"/>
+            <column name="emoji"     value="✨"/>
+            <column name="image_url" value="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400"/>
+            <column name="sort_order" valueNumeric="3"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name"      value="Maison &amp; Déco"/>
+            <column name="name_ar"   value="المنزل والديكور"/>
+            <column name="slug"      value="maison"/>
+            <column name="emoji"     value="🏠"/>
+            <column name="image_url" value="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400"/>
+            <column name="sort_order" valueNumeric="4"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name"      value="Électronique"/>
+            <column name="name_ar"   value="الإلكترونيات"/>
+            <column name="slug"      value="electronique"/>
+            <column name="emoji"     value="📱"/>
+            <column name="image_url" value="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400"/>
+            <column name="sort_order" valueNumeric="5"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name"      value="Alimentation"/>
+            <column name="name_ar"   value="المواد الغذائية"/>
+            <column name="slug"      value="alimentation"/>
+            <column name="emoji"     value="🌿"/>
+            <column name="image_url" value="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400"/>
+            <column name="sort_order" valueNumeric="6"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

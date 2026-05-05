@@ -104,4 +104,7 @@ infobip:
 cmi:
   merchant-id: ${CMI_MERCHANT_ID:}
   store-key: ${CMI_STORE_KEY:}
-  base-url: ${CMI_BASE_URL:https://testpayment.cmi.co.ma}
+  gateway-url: ${CMI_GATEWAY_URL:https://testpayment.cmi.co.ma/fim/est3Dgate}
+  ok-url: ${CMI_OK_URL:http://localhost:3000/checkout/success}
+  fail-url: ${CMI_FAIL_URL:http://localhost:3000/checkout/failed}
+  callback-url: ${CMI_CALLBACK_URL:http://localhost:8080/api/payment/cmi/callback}

@@ -1,5 +1,7 @@
 ﻿package ma.soukdigital.repository;
 
+import ma.soukdigital.entity.PaymentTransaction;
+import ma.soukdigital.entity.TransactionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,6 +15,7 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
 
     List<PaymentTransaction> findByOrderIdAndStatus(UUID orderId, TransactionStatus status);
 }
+
 
 
 
