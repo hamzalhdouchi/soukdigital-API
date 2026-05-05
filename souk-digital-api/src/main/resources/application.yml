@@ -85,14 +85,15 @@ springdoc:
     description: Moroccan Marketplace — Spring Boot 3.3
     version: 1.0.0
 
-# ── File Upload ───────────────────────────
-upload:
-  provider: ${UPLOAD_PROVIDER:s3}   # s3 | supabase | local
-  aws:
-    access-key: ${AWS_ACCESS_KEY:}
-    secret-key: ${AWS_SECRET_KEY:}
-    region: ${AWS_REGION:eu-west-1}
-    bucket: ${AWS_BUCKET:souk-digital-assets}
+# ── Storage / File Upload ─────────────────
+storage:
+  bucket: ${STORAGE_BUCKET:souk-digital-assets}
+  region: ${STORAGE_REGION:eu-west-1}
+  endpoint: ${STORAGE_ENDPOINT:}
+  access-key: ${STORAGE_ACCESS_KEY:}
+  secret-key: ${STORAGE_SECRET_KEY:}
+  public-url: ${STORAGE_PUBLIC_URL:https://souk-digital-assets.s3.eu-west-1.amazonaws.com}
+  max-file-size-mb: 5
 
 # ── SMS / Infobip ─────────────────────────
 infobip:

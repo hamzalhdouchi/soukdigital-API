@@ -21,6 +21,7 @@ public class AuthService {
     private final PasswordEncoder   passwordEncoder;
     private final JwtService        jwtService;
     private final OtpService        otpService;
+    private final EmailService      emailService;
 
     @Transactional
     public RegisterResponse register(RegisterRequest req) {
@@ -57,6 +58,7 @@ public class AuthService {
 
         user.setVerified(true);
         userRepository.save(user);
+        emailService.sendWelcomeEmail(user);
 
         return buildAuthResponse(user);
     }

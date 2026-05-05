@@ -1,4 +1,4 @@
-﻿package ma.soukdigital.repository;
+package ma.soukdigital.repository;
 
 import ma.soukdigital.entity.PaymentTransaction;
 import ma.soukdigital.entity.TransactionStatus;

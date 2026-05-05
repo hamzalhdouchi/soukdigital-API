@@ -1,0 +1,9 @@
+.git
+.github
+.gitignore
+*.md
+target/
+.env
+.env.*
+!.env.example
+src/test/

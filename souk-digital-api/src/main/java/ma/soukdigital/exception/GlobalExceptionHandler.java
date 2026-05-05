@@ -26,6 +26,12 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse(403, ex.getMessage()));
     }
 
+    @ExceptionHandler(DuplicateReviewException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateReview(DuplicateReviewException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new ErrorResponse(409, ex.getMessage()));
+    }
+
     @ExceptionHandler(InsufficientStockException.class)
     public ResponseEntity<ErrorResponse> handleStock(InsufficientStockException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)

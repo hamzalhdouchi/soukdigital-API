@@ -1,4 +1,4 @@
-﻿package ma.soukdigital.entity;
+package ma.soukdigital.entity;
 
 public enum Role {
     BUYER, VENDOR, ADMIN

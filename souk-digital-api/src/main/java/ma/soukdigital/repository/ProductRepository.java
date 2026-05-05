@@ -1,4 +1,4 @@
-﻿package ma.soukdigital.repository;
+package ma.soukdigital.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -58,6 +59,31 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     );
 
     long countByVendorId(UUID vendorId);
+
+    @Query("""
+        SELECT p.name FROM Product p
+        WHERE p.isActive = true
+        AND LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%'))
+        ORDER BY p.reviewCount DESC
+        """)
+    List<String> findSuggestions(@Param("q") String q, Pageable pageable);
+
+    long countByVendorIdAndIsActiveTrue(UUID vendorId);
+
+    @Query("""
+        SELECT i.product.id    AS productId,
+               i.product.name  AS name,
+               SUM(i.quantity) AS totalSold,
+               SUM(i.price * i.quantity) AS revenue,
+               i.product.rating AS rating,
+               i.productImage  AS image
+        FROM OrderItem i
+        WHERE i.vendor.id = :vendorId
+        AND i.order.status = ma.soukdigital.entity.OrderStatus.DELIVERED
+        GROUP BY i.product.id, i.product.name, i.product.rating, i.productImage
+        ORDER BY totalSold DESC
+        """)
+    List<Object[]> findTopProductsByVendor(@Param("vendorId") UUID vendorId, Pageable pageable);
 }
 
 

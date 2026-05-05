@@ -1,0 +1,47 @@
+spring:
+  profiles:
+    active: test
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  mail:
+    host: localhost
+    port: 3025
+    username: test
+    password: test
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
+jwt:
+  secret: test-secret-key-must-be-at-least-256-bits-long-for-hmac-sha256
+  expiration: 86400000
+  refresh-expiration: 604800000
+
+cors:
+  allowed-origins: http://localhost:3000
+
+storage:
+  bucket: test-bucket
+  region: us-east-1
+  endpoint: http://localhost:9000
+  access-key: test
+  secret-key: test-secret-key-minimum-32chars-ok
+  public-url: http://localhost:9000/test-bucket
+  max-file-size-mb: 5
+
+infobip:
+  base-url: ""
+  api-key: ""
+  sender: SoukDigital
+
+cmi:
+  merchant-id: test
+  store-key: test-store-key
+  gateway-url: https://testpayment.cmi.co.ma/fim/est3Dgate
+  ok-url: http://localhost:3000/checkout/success
+  fail-url: http://localhost:3000/checkout/failed
+  callback-url: http://localhost:8080/api/payment/cmi/callback

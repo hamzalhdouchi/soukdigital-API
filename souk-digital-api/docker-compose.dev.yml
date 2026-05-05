@@ -1,0 +1,12 @@
+version: "3.9"
+
+# Extends docker-compose.yml — removes the app service so you can run
+# the Spring Boot API locally (mvn spring-boot:run -Dspring-boot.run.profiles=dev)
+# while keeping Postgres, Redis and Mailpit in Docker.
+#
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+services:
+  app:
+    profiles:
+      - disabled

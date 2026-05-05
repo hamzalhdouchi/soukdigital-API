@@ -1,4 +1,4 @@
-﻿package ma.soukdigital.entity;
+package ma.soukdigital.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

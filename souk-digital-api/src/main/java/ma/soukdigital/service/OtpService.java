@@ -20,12 +20,12 @@ public class OtpService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final StringRedisTemplate redis;
+    private final SmsService          smsService;
 
     public void generateAndSend(String phone) {
         String code = String.format("%06d", RANDOM.nextInt(1_000_000));
         redis.opsForValue().set(OTP_PREFIX + phone, code, OTP_TTL);
-        // TODO: replace with real SMS via SmsService (Infobip) in Step 15
-        log.info("[OTP] {} → code: {}", phone, code);
+        smsService.sendOtp(phone, code);
     }
 
     public void verify(String phone, String code) {

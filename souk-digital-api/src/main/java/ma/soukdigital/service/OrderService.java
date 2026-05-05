@@ -31,6 +31,7 @@ public class OrderService {
     private final PromoCodeRepository promoCodeRepository;
     private final UserRepository      userRepository;
     private final VendorRepository    vendorRepository;
+    private final EmailService        emailService;
 
     @Transactional
     public OrderDetailDto placeOrder(PlaceOrderRequest req, UUID buyerId) {
@@ -128,7 +129,9 @@ public class OrderService {
             order.setPaymentStatus(PaymentStatus.PENDING);
         }
 
-        return toDetail(orderRepository.save(order));
+        Order saved = orderRepository.save(order);
+        emailService.sendOrderConfirmation(saved);
+        return toDetail(saved);
     }
 
     @Transactional(readOnly = true)
@@ -177,6 +180,13 @@ public class OrderService {
             return orderRepository.findByVendorIdAndStatus(vendor.getId(), status, pageable).map(this::toSummary);
         }
         return orderRepository.findByVendorId(vendor.getId(), pageable).map(this::toSummary);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderDetailDto getOrderDetailAdmin(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new EntityNotFoundException("Commande introuvable."));
+        return toDetail(order);
     }
 
     // ── Helpers ───────────────────────────────────────────────

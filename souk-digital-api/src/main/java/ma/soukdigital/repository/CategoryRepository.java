@@ -1,4 +1,4 @@
-﻿package ma.soukdigital.repository;
+package ma.soukdigital.repository;
 
 import ma.soukdigital.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;

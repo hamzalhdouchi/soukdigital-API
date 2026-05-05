@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Confirmation de commande</title>
+  <style>
+    body { margin:0; padding:0; background:#f5f5f0; font-family: 'Helvetica Neue', Arial, sans-serif; color:#333; }
+    .wrapper { max-width:600px; margin:32px auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+    .header  { background:#c8963e; padding:28px 32px; text-align:center; }
+    .header h1 { margin:0; color:#fff; font-size:22px; letter-spacing:1px; }
+    .header p  { margin:4px 0 0; color:#f5e0b8; font-size:13px; }
+    .body    { padding:28px 32px; }
+    .badge   { display:inline-block; background:#e8f5e9; color:#2e7d32; border-radius:20px; padding:4px 14px; font-size:13px; font-weight:600; }
+    h2       { font-size:16px; color:#555; margin:20px 0 10px; }
+    table    { width:100%; border-collapse:collapse; font-size:14px; }
+    th       { background:#fdf3e3; color:#8b6914; text-align:left; padding:10px 12px; border-bottom:2px solid #f0d88a; }
+    td       { padding:10px 12px; border-bottom:1px solid #f0f0f0; vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    .totals  { margin-top:16px; font-size:14px; }
+    .totals tr td:last-child { text-align:right; font-weight:600; }
+    .total-row td { font-size:16px; color:#c8963e; border-top:2px solid #f0d88a !important; }
+    .address { background:#fafafa; border-radius:6px; padding:14px 16px; font-size:14px; margin-top:16px; }
+    .footer  { background:#f5f5f0; padding:18px 32px; text-align:center; font-size:12px; color:#999; }
+    .footer a { color:#c8963e; text-decoration:none; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Souk Digital</h1>
+    <p>Marché artisanal marocain</p>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+    <p>Bonjour <strong th:text="${order.buyer.firstName}">Prénom</strong>,</p>
+    <p>
+      Votre commande <strong th:text="'#' + ${order.id.toString().substring(0,8).toUpperCase()}">XXXXXXXX</strong>
+      a été <span class="badge">confirmée</span>.
+    </p>
+
+    <!-- Items -->
+    <h2>Articles commandés</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Article</th>
+          <th>Qté</th>
+          <th style="text-align:right">Prix</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="item : ${items}">
+          <td th:text="${item.productName}">Produit</td>
+          <td th:text="${item.quantity}">1</td>
+          <td style="text-align:right" th:text="${#numbers.formatDecimal(item.subtotal,1,2) + ' MAD'}">0.00 MAD</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Totals -->
+    <table class="totals">
+      <tr>
+        <td>Sous-total</td>
+        <td th:text="${#numbers.formatDecimal(order.subtotal,1,2) + ' MAD'}">0.00 MAD</td>
+      </tr>
+      <tr th:if="${order.discountAmount != null and order.discountAmount > 0}">
+        <td>Réduction</td>
+        <td th:text="'- ' + ${#numbers.formatDecimal(order.discountAmount,1,2)} + ' MAD'">- 0.00 MAD</td>
+      </tr>
+      <tr>
+        <td>Livraison</td>
+        <td th:text="${order.deliveryFee == 0 ? 'Gratuite' : #numbers.formatDecimal(order.deliveryFee,1,2) + ' MAD'}">Gratuite</td>
+      </tr>
+      <tr class="total-row">
+        <td><strong>Total</strong></td>
+        <td th:text="${#numbers.formatDecimal(order.total,1,2) + ' MAD'}">0.00 MAD</td>
+      </tr>
+    </table>
+
+    <!-- Delivery address -->
+    <h2>Adresse de livraison</h2>
+    <div class="address" th:if="${address != null}">
+      <div th:text="${address.firstName + ' ' + address.lastName}">Nom Prénom</div>
+      <div th:text="${address.street}">Rue</div>
+      <div th:text="${address.city + (address.zipCode != null ? ', ' + address.zipCode : '')}">Ville</div>
+      <div th:text="${address.phone}">Téléphone</div>
+    </div>
+
+    <p style="margin-top:24px;font-size:13px;color:#777;">
+      Vous recevrez une notification dès que votre commande sera expédiée.<br/>
+      Pour toute question, contactez-nous à <a href="mailto:support@soukdigital.ma">support@soukdigital.ma</a>.
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    &copy; 2025 Souk Digital &mdash; <a href="https://soukdigital.ma">soukdigital.ma</a>
+  </div>
+</div>
+</body>
+</html>
