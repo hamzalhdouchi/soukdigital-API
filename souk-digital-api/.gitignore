@@ -1,0 +1,34 @@
+# ── Maven ──────────────────────────────────
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ── IDE ────────────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.eclipse
+.classpath
+.project
+.settings/
+
+# ── Environment & Secrets ──────────────────
+.env
+.env.local
+.env.production
+*.env
+
+# ── Logs ───────────────────────────────────
+*.log
+logs/
+spring.log
+
+# ── OS ─────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Docker ─────────────────────────────────
+docker-compose.override.yml

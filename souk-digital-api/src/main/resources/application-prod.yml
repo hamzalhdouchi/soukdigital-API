@@ -1,0 +1,18 @@
+spring:
+  jpa:
+    show-sql: false
+
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+
+logging:
+  level:
+    root: WARN
+    ma.soukdigital: INFO
+
+management:
+  endpoint:
+    health:
+      show-details: never

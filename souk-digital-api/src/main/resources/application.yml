@@ -1,0 +1,107 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: souk-digital-api
+
+  # ── Database ──────────────────────────────
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/soukdigital}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  # ── JPA / Hibernate ───────────────────────
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: public
+
+  # ── Liquibase ─────────────────────────────
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+  # ── Redis ─────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+
+  # ── Mail ──────────────────────────────────
+  mail:
+    host: ${MAIL_HOST:smtp.resend.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:resend}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+# ── JWT ───────────────────────────────────
+jwt:
+  secret: ${JWT_SECRET:change-me-in-production-must-be-at-least-256-bits-long-secret-key}
+  expiration: 86400000        # 24h in ms
+  refresh-expiration: 604800000  # 7d in ms
+
+# ── CORS ──────────────────────────────────
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+
+# ── Actuator ──────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# ── Swagger / OpenAPI ─────────────────────
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  info:
+    title: Souk Digital API
+    description: Moroccan Marketplace — Spring Boot 3.3
+    version: 1.0.0
+
+# ── File Upload ───────────────────────────
+upload:
+  provider: ${UPLOAD_PROVIDER:s3}   # s3 | supabase | local
+  aws:
+    access-key: ${AWS_ACCESS_KEY:}
+    secret-key: ${AWS_SECRET_KEY:}
+    region: ${AWS_REGION:eu-west-1}
+    bucket: ${AWS_BUCKET:souk-digital-assets}
+
+# ── SMS / Infobip ─────────────────────────
+infobip:
+  base-url: ${INFOBIP_BASE_URL:}
+  api-key: ${INFOBIP_API_KEY:}
+  sender: ${INFOBIP_SENDER:SoukDigital}
+
+# ── CMI Payment ───────────────────────────
+cmi:
+  merchant-id: ${CMI_MERCHANT_ID:}
+  store-key: ${CMI_STORE_KEY:}
+  base-url: ${CMI_BASE_URL:https://testpayment.cmi.co.ma}
