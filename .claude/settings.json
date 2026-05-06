@@ -3,7 +3,11 @@
     "allow": [
       "Read(//c/Users/pc/.claude/projects/c--Users-pc-Desktop-test/memory/**)",
       "Bash(npx tsc *)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(dir \"C:\\\\Program Files\\\\Java\" /b)",
+      "Bash(dir \"C:\\\\Program Files\\\\Eclipse Adoptium\" /b)",
+      "Bash(dir \"C:\\\\Program Files\\\\Microsoft\" /b)",
+      "Bash(findstr /i jdk)"
     ]
   }
 }
