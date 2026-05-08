@@ -22,15 +22,23 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsByPhone(String phone);
 
-    @Query("""
-        SELECT u FROM User u
-        WHERE (:q IS NULL
-            OR LOWER(u.firstName) LIKE LOWER(CONCAT('%',:q,'%'))
-            OR LOWER(u.lastName)  LIKE LOWER(CONCAT('%',:q,'%'))
-            OR LOWER(u.email)     LIKE LOWER(CONCAT('%',:q,'%'))
-            OR u.phone             LIKE CONCAT('%',:q,'%'))
-        ORDER BY u.createdAt DESC
-        """)
+    @Query(
+        value = """
+            SELECT u FROM User u
+            WHERE (:q IS NULL
+                OR LOWER(u.firstName) LIKE LOWER(CONCAT('%',:q,'%'))
+                OR LOWER(u.lastName)  LIKE LOWER(CONCAT('%',:q,'%'))
+                OR u.phone             LIKE CONCAT('%',:q,'%'))
+            ORDER BY u.createdAt DESC
+            """,
+        countQuery = """
+            SELECT COUNT(u) FROM User u
+            WHERE (:q IS NULL
+                OR LOWER(u.firstName) LIKE LOWER(CONCAT('%',:q,'%'))
+                OR LOWER(u.lastName)  LIKE LOWER(CONCAT('%',:q,'%'))
+                OR u.phone             LIKE CONCAT('%',:q,'%'))
+            """
+    )
     Page<User> search(@Param("q") String q, Pageable pageable);
 
     long countByRole(ma.soukdigital.entity.Role role);

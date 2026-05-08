@@ -29,7 +29,10 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public Page<AdminUserDto> listUsers(String q, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, org.springframework.data.domain.Sort.by("createdAt").descending());
+        if (q == null || q.isBlank()) {
+            return userRepository.findAll(pageable).map(this::toAdminUserDto);
+        }
         return userRepository.search(q, pageable).map(this::toAdminUserDto);
     }
 
