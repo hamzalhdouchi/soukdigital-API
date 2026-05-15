@@ -24,12 +24,11 @@ public interface VendorRepository extends JpaRepository<Vendor, UUID> {
 
     Page<Vendor> findByCityAndIsVerifiedTrue(String city, Pageable pageable);
 
-    @Query("""
-        SELECT v FROM Vendor v
-        WHERE LOWER(v.name) LIKE LOWER(CONCAT('%', :q, '%'))
-           OR LOWER(v.nameAr) LIKE LOWER(CONCAT('%', :q, '%'))
-        ORDER BY v.rating DESC
-        """)
+    @Query(value = """
+        SELECT * FROM vendors
+        WHERE name ILIKE '%' || :q || '%' OR name_ar ILIKE '%' || :q || '%'
+        ORDER BY rating DESC
+        """, nativeQuery = true)
     List<Vendor> searchByName(@Param("q") String q, Pageable pageable);
 
     Page<Vendor> findAllByOrderByCreatedAtDesc(Pageable pageable);

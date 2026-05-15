@@ -9,6 +9,7 @@ import ma.soukdigital.entity.OrderStatus;
 import ma.soukdigital.entity.Vendor;
 import ma.soukdigital.exception.EntityNotFoundException;
 import ma.soukdigital.repository.VendorRepository;
+import ma.soukdigital.service.ProductService;
 import ma.soukdigital.service.VendorDashboardService;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +31,7 @@ public class VendorDashboardController {
 
     private final VendorDashboardService dashboardService;
     private final VendorRepository       vendorRepository;
+    private final ProductService         productService;
 
     @GetMapping("/stats")
     @Operation(summary = "Overall KPIs — revenue, orders, products, rating")
@@ -67,6 +69,16 @@ public class VendorDashboardController {
     @Operation(summary = "Order count breakdown by status")
     public Map<String, Long> ordersByStatus(@AuthenticationPrincipal UserDetails principal) {
         return dashboardService.getOrdersByStatus(vendorId(principal));
+    }
+
+    @GetMapping("/products")
+    @Operation(summary = "All vendor products (active + inactive)")
+    public Page<ProductSummaryDto> products(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "50") int size) {
+        UUID userId = UUID.fromString(principal.getUsername());
+        return productService.findOwnProducts(userId, page, size);
     }
 
     // ── Helper ────────────────────────────────────────────────

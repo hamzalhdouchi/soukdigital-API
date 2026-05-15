@@ -14,11 +14,15 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,7 +32,7 @@ import java.util.UUID;
 public class S3StorageService implements StorageService {
 
     private static final Set<String> ALLOWED_TYPES = Set.of(
-        "image/jpeg", "image/png", "image/webp"
+        "image/jpeg", "image/png"
     );
     private static final int MAX_DIMENSION = 1200;
 
@@ -54,6 +58,7 @@ public class S3StorageService implements StorageService {
     private int maxFileSizeMb;
 
     private S3Client s3;
+    private S3Presigner presigner;
 
     @PostConstruct
     void init() {
@@ -61,17 +66,27 @@ public class S3StorageService implements StorageService {
             log.warn("S3 credentials not configured — file upload disabled (set STORAGE_ACCESS_KEY / STORAGE_SECRET_KEY to enable)");
             return;
         }
+        var creds = StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey));
+        var reg   = Region.of(region);
+
         S3ClientBuilder builder = S3Client.builder()
-            .region(Region.of(region))
-            .credentialsProvider(StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKey, secretKey)));
+            .region(reg)
+            .credentialsProvider(creds)
+            .forcePathStyle(true); // required for MinIO
+
+        S3Presigner.Builder presignerBuilder = S3Presigner.builder()
+            .region(reg)
+            .credentialsProvider(creds);
 
         if (endpoint != null && !endpoint.isBlank()) {
-            builder.endpointOverride(URI.create(endpoint));
+            URI uri = URI.create(endpoint);
+            builder.endpointOverride(uri);
+            presignerBuilder.endpointOverride(uri);
         }
 
-        s3 = builder.build();
-        log.info("S3StorageService initialised — bucket={} region={}", bucket, region);
+        s3        = builder.build();
+        presigner = presignerBuilder.build();
+        log.info("S3StorageService initialised — bucket={} endpoint={}", bucket, endpoint);
     }
 
     @Override
@@ -81,13 +96,14 @@ public class S3StorageService implements StorageService {
         }
         validate(file);
 
-        byte[] data = resize(file);
-        String key  = buildKey(folder, file.getOriginalFilename());
+        byte[] data        = resize(file);
+        String key         = buildKey(folder, file.getContentType());
+        String contentType = outputContentType(file.getContentType());
 
         PutObjectRequest req = PutObjectRequest.builder()
             .bucket(bucket)
             .key(key)
-            .contentType(file.getContentType())
+            .contentType(contentType)
             .contentLength((long) data.length)
             .build();
 
@@ -99,12 +115,24 @@ public class S3StorageService implements StorageService {
     @Override
     public void delete(String url) {
         if (s3 == null || url == null || url.isBlank()) return;
-        String prefix = publicUrl.replaceAll("/+$", "") + "/";
-        if (!url.startsWith(prefix)) return;
-
-        String key = url.substring(prefix.length());
+        String key = extractKey(url);
+        if (key == null) return;
         s3.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(key).build());
-        log.debug("Deleted S3 object: {}", key);
+        log.debug("Deleted object: {}", key);
+    }
+
+    @Override
+    public String presign(String storedUrl, int expiryMinutes) {
+        if (presigner == null || storedUrl == null || storedUrl.isBlank()) return storedUrl;
+        String key = extractKey(storedUrl);
+        if (key == null) return storedUrl;
+
+        GetObjectPresignRequest req = GetObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofMinutes(expiryMinutes))
+            .getObjectRequest(GetObjectRequest.builder().bucket(bucket).key(key).build())
+            .build();
+
+        return presigner.presignGetObject(req).url().toString();
     }
 
     // ── Helpers ───────────────────────────────────────────────
@@ -136,19 +164,26 @@ public class S3StorageService implements StorageService {
     }
 
     private String outputFormat(String contentType) {
-        return switch (contentType) {
-            case "image/png"  -> "png";
-            case "image/webp" -> "webp";
-            default           -> "jpg";
-        };
+        return "image/png".equals(contentType) ? "png" : "jpg";
     }
 
-    private String buildKey(String folder, String originalName) {
-        String ext = "";
-        if (originalName != null && originalName.contains(".")) {
-            ext = originalName.substring(originalName.lastIndexOf('.'));
-        }
+    private String outputExtension(String contentType) {
+        return "image/png".equals(contentType) ? ".png" : ".jpg";
+    }
+
+    private String outputContentType(String contentType) {
+        return "image/png".equals(contentType) ? "image/png" : "image/jpeg";
+    }
+
+    private String buildKey(String folder, String contentType) {
         String dir = (folder == null || folder.isBlank()) ? "uploads" : folder.replaceAll("^/+|/+$", "");
-        return dir + "/" + UUID.randomUUID() + ext;
+        return dir + "/" + UUID.randomUUID() + outputExtension(contentType);
+    }
+
+    /** Extracts the object key from a stored URL (strips the publicUrl prefix). */
+    private String extractKey(String url) {
+        String prefix = publicUrl.replaceAll("/+$", "") + "/";
+        if (!url.startsWith(prefix)) return null;
+        return url.substring(prefix.length());
     }
 }

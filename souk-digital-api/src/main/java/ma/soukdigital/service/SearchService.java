@@ -71,7 +71,7 @@ public class SearchService {
             case "price_asc"  -> Sort.by("price").ascending();
             case "price_desc" -> Sort.by("price").descending();
             case "rating"     -> Sort.by("rating").descending();
-            default           -> Sort.by("createdAt").descending();
+            default           -> Sort.by("created_at").descending();
         };
         return PageRequest.of(page, size, s);
     }
@@ -84,7 +84,8 @@ public class SearchService {
             p.getPrice(), p.getOriginalPrice(), image,
             p.getRating(), p.getReviewCount(), p.getBadge(),
             p.getStockCount() > 0, p.isFreeDelivery(), p.getCity(),
-            new ProductVendorDto(v.getId(), v.getName(), v.getSlug(), v.isArtisan(), v.isVerified())
+            new ProductVendorDto(v.getId(), v.getName(), v.getSlug(), v.isArtisan(), v.isVerified()),
+            p.isActive()
         );
     }
 

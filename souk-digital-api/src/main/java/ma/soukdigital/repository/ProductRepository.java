@@ -21,32 +21,49 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     Page<Product> findByVendorIdAndIsActiveTrue(UUID vendorId, Pageable pageable);
 
+    Page<Product> findByVendorId(UUID vendorId, Pageable pageable);
+
     @Query("SELECT p FROM Product p JOIN p.category c WHERE c.slug = :slug AND p.isActive = true")
     Page<Product> findByCategorySlug(@Param("slug") String slug, Pageable pageable);
 
-    @Query("""
-        SELECT p FROM Product p
-        WHERE p.isActive = true
-        AND (
-            LOWER(p.name)   LIKE LOWER(CONCAT('%', :keyword, '%'))
-         OR LOWER(p.nameAr) LIKE LOWER(CONCAT('%', :keyword, '%'))
-        )
-        """)
+    @Query(value = """
+        SELECT * FROM products
+        WHERE is_active = true
+          AND (name ILIKE '%' || :keyword || '%' OR name_ar ILIKE '%' || :keyword || '%')
+        """,
+        countQuery = """
+        SELECT COUNT(*) FROM products
+        WHERE is_active = true
+          AND (name ILIKE '%' || :keyword || '%' OR name_ar ILIKE '%' || :keyword || '%')
+        """, nativeQuery = true)
     Page<Product> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query("""
-        SELECT p FROM Product p
-        WHERE p.isActive = true
-        AND (:keyword IS NULL OR
-             LOWER(p.name)   LIKE LOWER(CONCAT('%', :keyword, '%'))
-          OR LOWER(p.nameAr) LIKE LOWER(CONCAT('%', :keyword, '%')))
-        AND (:categorySlug IS NULL OR p.category.slug = :categorySlug)
-        AND (:city IS NULL OR p.city = :city)
-        AND (:freeDelivery = false OR p.freeDelivery = true)
-        AND (:artisanOnly = false OR p.vendor.isArtisan = true)
-        AND (:minPrice IS NULL OR p.price >= :minPrice)
-        AND (:maxPrice IS NULL OR p.price <= :maxPrice)
-        """)
+    @Query(value = """
+        SELECT p.* FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN vendors v    ON p.vendor_id   = v.id
+        WHERE p.is_active = true
+          AND (:keyword    IS NULL OR p.name ILIKE '%' || :keyword || '%' OR p.name_ar ILIKE '%' || :keyword || '%')
+          AND (:categorySlug IS NULL OR c.slug = :categorySlug)
+          AND (:city       IS NULL OR p.city = :city)
+          AND (:freeDelivery = false OR p.free_delivery = true)
+          AND (:artisanOnly  = false OR v.is_artisan = true)
+          AND (:minPrice   IS NULL OR p.price >= CAST(:minPrice AS numeric))
+          AND (:maxPrice   IS NULL OR p.price <= CAST(:maxPrice AS numeric))
+        """,
+        countQuery = """
+        SELECT COUNT(*) FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN vendors v    ON p.vendor_id   = v.id
+        WHERE p.is_active = true
+          AND (:keyword    IS NULL OR p.name ILIKE '%' || :keyword || '%' OR p.name_ar ILIKE '%' || :keyword || '%')
+          AND (:categorySlug IS NULL OR c.slug = :categorySlug)
+          AND (:city       IS NULL OR p.city = :city)
+          AND (:freeDelivery = false OR p.free_delivery = true)
+          AND (:artisanOnly  = false OR v.is_artisan = true)
+          AND (:minPrice   IS NULL OR p.price >= CAST(:minPrice AS numeric))
+          AND (:maxPrice   IS NULL OR p.price <= CAST(:maxPrice AS numeric))
+        """, nativeQuery = true)
     Page<Product> filter(
         @Param("keyword") String keyword,
         @Param("categorySlug") String categorySlug,
@@ -60,12 +77,11 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     long countByVendorId(UUID vendorId);
 
-    @Query("""
-        SELECT p.name FROM Product p
-        WHERE p.isActive = true
-        AND LOWER(p.name) LIKE LOWER(CONCAT('%', :q, '%'))
-        ORDER BY p.reviewCount DESC
-        """)
+    @Query(value = """
+        SELECT name FROM products
+        WHERE is_active = true AND name ILIKE '%' || :q || '%'
+        ORDER BY review_count DESC
+        """, nativeQuery = true)
     List<String> findSuggestions(@Param("q") String q, Pageable pageable);
 
     long countByVendorIdAndIsActiveTrue(UUID vendorId);

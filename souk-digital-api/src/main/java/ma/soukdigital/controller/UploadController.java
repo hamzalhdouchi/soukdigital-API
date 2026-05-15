@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/upload")
@@ -20,8 +21,9 @@ import java.util.Map;
 @SecurityRequirement(name = "bearerAuth")
 public class UploadController {
 
-    private static final String PRODUCT_FOLDER = "products";
-    private static final int    MAX_BATCH      = 8;
+    private static final String PRODUCT_FOLDER  = "products";
+    private static final int    MAX_BATCH       = 8;
+    private static final int    PRESIGN_MINUTES = 60;
 
     private final StorageService storageService;
 
@@ -46,5 +48,20 @@ public class UploadController {
             .map(f -> storageService.upload(f, PRODUCT_FOLDER))
             .toList();
         return Map.of("urls", urls);
+    }
+
+    @GetMapping("/presign")
+    @Operation(summary = "Generate a presigned URL for a private object (valid 60 min)")
+    public Map<String, String> presign(@RequestParam String url) {
+        return Map.of("url", storageService.presign(url, PRESIGN_MINUTES));
+    }
+
+    @PostMapping("/presign/batch")
+    @Operation(summary = "Generate presigned URLs for multiple objects (valid 60 min)")
+    public Map<String, List<String>> presignBatch(@RequestBody List<String> urls) {
+        List<String> signed = urls.stream()
+            .map(u -> storageService.presign(u, PRESIGN_MINUTES))
+            .collect(Collectors.toList());
+        return Map.of("urls", signed);
     }
 }

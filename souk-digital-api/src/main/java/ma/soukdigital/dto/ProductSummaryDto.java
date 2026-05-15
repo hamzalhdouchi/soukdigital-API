@@ -17,5 +17,6 @@ public record ProductSummaryDto(
     boolean inStock,
     boolean freeDelivery,
     String city,
-    ProductVendorDto vendor
+    ProductVendorDto vendor,
+    boolean isActive
 ) {}

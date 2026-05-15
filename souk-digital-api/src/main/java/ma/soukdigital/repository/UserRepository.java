@@ -24,20 +24,21 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query(
         value = """
-            SELECT u FROM User u
+            SELECT * FROM users
             WHERE (:q IS NULL
-                OR LOWER(u.firstName) LIKE LOWER(CONCAT('%',:q,'%'))
-                OR LOWER(u.lastName)  LIKE LOWER(CONCAT('%',:q,'%'))
-                OR u.phone             LIKE CONCAT('%',:q,'%'))
-            ORDER BY u.createdAt DESC
+                OR first_name ILIKE '%' || :q || '%'
+                OR last_name  ILIKE '%' || :q || '%'
+                OR phone      ILIKE '%' || :q || '%')
+            ORDER BY created_at DESC
             """,
         countQuery = """
-            SELECT COUNT(u) FROM User u
+            SELECT COUNT(*) FROM users
             WHERE (:q IS NULL
-                OR LOWER(u.firstName) LIKE LOWER(CONCAT('%',:q,'%'))
-                OR LOWER(u.lastName)  LIKE LOWER(CONCAT('%',:q,'%'))
-                OR u.phone             LIKE CONCAT('%',:q,'%'))
-            """
+                OR first_name ILIKE '%' || :q || '%'
+                OR last_name  ILIKE '%' || :q || '%'
+                OR phone      ILIKE '%' || :q || '%')
+            """,
+        nativeQuery = true
     )
     Page<User> search(@Param("q") String q, Pageable pageable);
 

@@ -224,7 +224,8 @@ public class AdminService {
             p.getPrice(), p.getOriginalPrice(), image,
             p.getRating(), p.getReviewCount(), p.getBadge(),
             p.getStockCount() > 0, p.isFreeDelivery(), p.getCity(),
-            new ProductVendorDto(v.getId(), v.getName(), v.getSlug(), v.isArtisan(), v.isVerified()));
+            new ProductVendorDto(v.getId(), v.getName(), v.getSlug(), v.isArtisan(), v.isVerified()),
+            p.isActive());
     }
 
     private BigDecimal orZero(BigDecimal v) {

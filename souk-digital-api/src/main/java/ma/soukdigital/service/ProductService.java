@@ -65,6 +65,14 @@ public class ProductService {
             .map(this::toSummary);
     }
 
+    public Page<ProductSummaryDto> findOwnProducts(UUID userId, int page, int size) {
+        Vendor vendor = vendorRepository.findByUserId(userId)
+            .orElseThrow(() -> new EntityNotFoundException("Profil vendeur introuvable."));
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return productRepository.findByVendorId(vendor.getId(), pageable)
+            .map(this::toSummary);
+    }
+
     @Transactional
     public ProductDetailDto create(CreateProductRequest req, UUID userId) {
         Vendor vendor = vendorRepository.findByUserId(userId)
@@ -166,7 +174,7 @@ public class ProductService {
             case "price_asc"  -> Sort.by("price").ascending();
             case "price_desc" -> Sort.by("price").descending();
             case "rating"     -> Sort.by("rating").descending();
-            default           -> Sort.by("createdAt").descending();
+            default           -> Sort.by("created_at").descending();
         };
         return PageRequest.of(page, size, s);
     }
@@ -178,7 +186,7 @@ public class ProductService {
             p.getPrice(), p.getOriginalPrice(), image,
             p.getRating(), p.getReviewCount(), p.getBadge(),
             p.getStockCount() > 0, p.isFreeDelivery(), p.getCity(),
-            toVendorDto(p.getVendor())
+            toVendorDto(p.getVendor()), p.isActive()
         );
     }
 

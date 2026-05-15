@@ -16,4 +16,7 @@ class StubStorageService implements StorageService {
 
     @Override
     public void delete(String publicUrl) {}
+
+    @Override
+    public String presign(String storedUrl, int expiryMinutes) { return storedUrl; }
 }

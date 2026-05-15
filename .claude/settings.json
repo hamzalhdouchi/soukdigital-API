@@ -7,7 +7,9 @@
       "Bash(dir \"C:\\\\Program Files\\\\Java\" /b)",
       "Bash(dir \"C:\\\\Program Files\\\\Eclipse Adoptium\" /b)",
       "Bash(dir \"C:\\\\Program Files\\\\Microsoft\" /b)",
-      "Bash(findstr /i jdk)"
+      "Bash(findstr /i jdk)",
+      "Bash(npm run *)",
+      "Bash(JAVA_HOME=\"C:\\\\Program Files\\\\Common Files\\\\Oracle\\\\Java\\\\javapath\" mvn spring-boot:run -Djava.home=\"C:\\\\Program Files\\\\Common Files\\\\Oracle\\\\Java\\\\javapath\")"
     ]
   }
 }

@@ -1,0 +1,42 @@
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+
+# Java / Backend
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.iml
+.mvn/
+backend/.env
+
+# IDE
+.idea/
+.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+
+# Coverage
+coverage/
+htmlcov/
+.nyc_output/
