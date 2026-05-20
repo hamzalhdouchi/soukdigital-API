@@ -32,3 +32,21 @@ export function useDeleteProduct() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-products'] }),
   })
 }
+
+export function useUploadProductImage() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ productId, file }: { productId: number; file: File }) =>
+      adminProductService.uploadImage(productId, file),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-products'] }),
+  })
+}
+
+export function useDeleteProductImage() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ productId, imageId }: { productId: number; imageId: number }) =>
+      adminProductService.deleteImage(productId, imageId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-products'] }),
+  })
+}

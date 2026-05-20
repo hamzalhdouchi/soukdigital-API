@@ -5,20 +5,26 @@ import com.solar.shop.brand.repository.BrandRepository;
 import com.solar.shop.category.entity.Category;
 import com.solar.shop.category.repository.CategoryRepository;
 import com.solar.shop.common.dto.PageResponse;
+import com.solar.shop.common.exception.BusinessException;
 import com.solar.shop.common.exception.ResourceNotFoundException;
 import com.solar.shop.product.dto.ProductCreateRequest;
 import com.solar.shop.product.dto.ProductDetailResponse;
 import com.solar.shop.product.dto.ProductFilterRequest;
 import com.solar.shop.product.dto.ProductUpdateRequest;
 import com.solar.shop.product.entity.Product;
+import com.solar.shop.product.entity.ProductImage;
 import com.solar.shop.product.entity.ProductVariant;
+import com.solar.shop.product.repository.ProductImageRepository;
 import com.solar.shop.product.repository.ProductRepository;
 import com.solar.shop.product.specification.ProductSpecification;
+import com.solar.shop.storage.MinioStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.text.Normalizer;
 import java.time.LocalDateTime;
@@ -28,9 +34,11 @@ import java.time.LocalDateTime;
 public class AdminProductService {
 
     private final ProductRepository productRepository;
+    private final ProductImageRepository productImageRepository;
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
     private final ProductService productService;
+    private final MinioStorageService minioStorageService;
 
     @Transactional(readOnly = true)
     public PageResponse<ProductDetailResponse> findAll(ProductFilterRequest filter, Pageable pageable) {
@@ -112,6 +120,47 @@ public class AdminProductService {
         productRepository.save(product);
     }
 
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
+    public ProductDetailResponse addImage(Long productId, MultipartFile file) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
+        try {
+            String url = minioStorageService.upload(file);
+            ProductImage image = new ProductImage();
+            image.setProduct(product);
+            image.setUrl(url);
+            image.setAltText(product.getName());
+            image.setPrimary(product.getImages().isEmpty());
+            image.setPosition(product.getImages().size());
+            productImageRepository.save(image);
+            product.getImages().add(image);
+            return toDetail(product);
+        } catch (Exception e) {
+            throw new BusinessException("Erreur lors de l'upload de l'image : " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
+    public ProductDetailResponse deleteImage(Long productId, Long imageId) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
+        ProductImage image = productImageRepository.findById(imageId)
+            .orElseThrow(() -> new ResourceNotFoundException("ProductImage", "id", imageId));
+
+        boolean wasPrimary = image.isPrimary();
+        minioStorageService.delete(image.getUrl());
+        product.getImages().remove(image);
+        productImageRepository.delete(image);
+
+        if (wasPrimary && !product.getImages().isEmpty()) {
+            product.getImages().get(0).setPrimary(true);
+            productRepository.save(product);
+        }
+        return toDetail(productRepository.findById(productId).orElseThrow());
+    }
+
     private void applyCommonFields(Product p, ProductCreateRequest req) {
         p.setShortDescription(req.shortDescription());
         p.setLongDescription(req.longDescription());
@@ -162,7 +211,7 @@ public class AdminProductService {
                 p.getProductType(), p.getInstallationType(), p.getPhaseType(), p.getInjectionType(),
                 p.getBasePowerKwc(), p.getInverterPowerVa(), p.getBatteryCapacityKwh(),
                 p.getVoltageOutput(), p.getPanelCount(), p.getWarrantyYears(),
-                p.getWeight(), p.getDimensions(), p.isFeatured(),
+                p.getWeight(), p.getDimensions(), p.isFeatured(), p.isActive(),
                 p.getMetaTitle(), p.getMetaDescription(),
                 category, brand, images, variants
         );

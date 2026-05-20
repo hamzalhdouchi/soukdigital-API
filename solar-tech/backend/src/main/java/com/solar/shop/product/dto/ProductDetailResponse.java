@@ -23,6 +23,7 @@ public record ProductDetailResponse(
     BigDecimal weight,
     String dimensions,
     boolean isFeatured,
+    boolean isActive,
     String metaTitle,
     String metaDescription,
     CategoryInfo category,

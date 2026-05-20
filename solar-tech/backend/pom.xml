@@ -130,6 +130,13 @@
       <version>${springdoc.version}</version>
     </dependency>
 
+    <!-- MinIO Object Storage -->
+    <dependency>
+      <groupId>io.minio</groupId>
+      <artifactId>minio</artifactId>
+      <version>8.5.11</version>
+    </dependency>
+
     <!-- Tests -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

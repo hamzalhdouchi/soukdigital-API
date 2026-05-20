@@ -105,7 +105,7 @@ public class ProductService {
             p.getProductType(), p.getInstallationType(), p.getPhaseType(), p.getInjectionType(),
             p.getBasePowerKwc(), p.getInverterPowerVa(), p.getBatteryCapacityKwh(),
             p.getVoltageOutput(), p.getPanelCount(), p.getWarrantyYears(),
-            p.getWeight(), p.getDimensions(), p.isFeatured(),
+            p.getWeight(), p.getDimensions(), p.isFeatured(), p.isActive(),
             p.getMetaTitle(), p.getMetaDescription(),
             category, brand, images, variants
         );

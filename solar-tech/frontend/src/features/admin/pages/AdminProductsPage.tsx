@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Trash2, X, Search, Pencil, AlertCircle } from 'lucide-react'
-import { useAdminProducts, useCreateProduct, useDeleteProduct, useUpdateProduct } from '../hooks/useAdminProducts'
+import { Plus, Trash2, X, Search, Pencil, AlertCircle, Upload, ImageOff } from 'lucide-react'
+import { useAdminProducts, useCreateProduct, useDeleteProduct, useUpdateProduct, useUploadProductImage, useDeleteProductImage } from '../hooks/useAdminProducts'
 import { useToast } from '@/lib/toast'
 import { formatPrice } from '@/lib/utils'
 import type { ProductDetailResponse } from '@/types'
@@ -51,6 +51,9 @@ export default function AdminProductsPage() {
   const { mutate: create, isPending: creating } = useCreateProduct()
   const { mutate: del } = useDeleteProduct()
   const { mutate: update, isPending: updating } = useUpdateProduct()
+  const { mutate: uploadImage, isPending: uploading } = useUploadProductImage()
+  const { mutate: deleteImage } = useDeleteProductImage()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const products = data?.content ?? []
   const total = data?.totalElements ?? 0
@@ -161,7 +164,7 @@ export default function AdminProductsPage() {
         <table className="w-full text-sm">
           <thead style={{ background: 'var(--color-surface-alt)' }}>
             <tr>
-              {['SKU', 'Nom', 'Type', 'Prix TTC', 'Actif', 'Actions'].map((h) => (
+              {['', 'SKU', 'Nom', 'Type', 'Prix TTC', 'Actif', 'Actions'].map((h) => (
                 <th key={h} className="px-4 py-3 text-left font-medium" style={{ color: 'var(--color-text-muted)' }}>{h}</th>
               ))}
             </tr>
@@ -170,7 +173,7 @@ export default function AdminProductsPage() {
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
-                  {Array.from({ length: 6 }).map((_, j) => (
+                  {Array.from({ length: 7 }).map((_, j) => (
                     <td key={j} className="px-4 py-3">
                       <div className="skeleton skeleton-text" style={{ width: '80%' }} />
                     </td>
@@ -179,7 +182,7 @@ export default function AdminProductsPage() {
               ))
             ) : products.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center" style={{ color: 'var(--color-text-muted)' }}>
+                <td colSpan={7} className="px-4 py-8 text-center" style={{ color: 'var(--color-text-muted)' }}>
                   Aucun produit
                 </td>
               </tr>
@@ -187,6 +190,21 @@ export default function AdminProductsPage() {
               const defaultVariant = p.variants.find((v) => v.isDefault) ?? p.variants[0]
               return (
                 <tr key={p.id} style={{ background: i % 2 === 0 ? 'white' : 'var(--color-bg)' }}>
+                  <td className="px-2 py-2 w-10">
+                    {p.images.length > 0 ? (
+                      <img
+                        src={p.images.find(img => img.isPrimary)?.url ?? p.images[0].url}
+                        alt={p.name}
+                        className="w-9 h-9 rounded object-cover flex-shrink-0"
+                        style={{ border: '1px solid var(--color-border)' }}
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded flex items-center justify-center"
+                        style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}>
+                        <ImageOff size={14} style={{ color: 'var(--color-text-muted)' }} />
+                      </div>
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-mono text-xs">{p.sku}</td>
                   <td className="px-4 py-3 font-medium max-w-xs truncate">{p.name}</td>
                   <td className="px-4 py-3">{p.productType}</td>
@@ -291,6 +309,82 @@ export default function AdminProductsPage() {
                   <input type="checkbox" {...editRegister('isFeatured')} style={{ accentColor: 'var(--color-primary)' }} />
                   Coup de cœur
                 </label>
+              </div>
+
+              {/* Image management */}
+              <div>
+                <label className="text-xs font-medium mb-2 block">Images</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {editProduct.images.map((img) => (
+                    <div key={img.id} className="relative group">
+                      <img
+                        src={img.url}
+                        alt={img.altText ?? ''}
+                        className="w-16 h-16 rounded object-cover"
+                        style={{ border: img.isPrimary ? '2px solid var(--color-primary)' : '1px solid var(--color-border)' }}
+                      />
+                      {img.isPrimary && (
+                        <span className="absolute top-0 left-0 text-[9px] font-bold px-1 rounded-br"
+                          style={{ background: 'var(--color-primary)', color: 'white' }}>
+                          ★
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => deleteImage(
+                          { productId: editProduct.id, imageId: img.id },
+                          {
+                            onSuccess: (updated) => setEditProduct(updated),
+                            onError: () => toast('Erreur lors de la suppression', 'error'),
+                          }
+                        )}
+                        className="absolute top-0 right-0 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        style={{ background: '#EF4444', color: 'white' }}
+                        title="Supprimer l'image"
+                      >
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="w-16 h-16 rounded flex flex-col items-center justify-center gap-1 transition-colors disabled:opacity-50"
+                    style={{ border: '2px dashed var(--color-border)', color: 'var(--color-text-muted)' }}
+                    title="Ajouter une image"
+                  >
+                    {uploading ? (
+                      <span className="text-[9px]">…</span>
+                    ) : (
+                      <>
+                        <Upload size={14} />
+                        <span className="text-[9px]">Ajouter</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file || !editProduct) return
+                    uploadImage(
+                      { productId: editProduct.id, file },
+                      {
+                        onSuccess: (updated) => { setEditProduct(updated); toast('Image ajoutée', 'success') },
+                        onError: () => toast('Erreur lors de l\'upload', 'error'),
+                      }
+                    )
+                    e.target.value = ''
+                  }}
+                />
+                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                  L'image avec ★ est l'image principale. Formats : JPG, PNG, WebP (max 10 Mo).
+                </p>
               </div>
 
               <div className="flex gap-3 pt-2">

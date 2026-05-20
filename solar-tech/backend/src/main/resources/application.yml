@@ -30,9 +30,7 @@ spring:
       port: ${SPRING_DATA_REDIS_PORT:6379}
 
   cache:
-    type: redis
-    redis:
-      time-to-live: 300000
+    type: simple
 
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}

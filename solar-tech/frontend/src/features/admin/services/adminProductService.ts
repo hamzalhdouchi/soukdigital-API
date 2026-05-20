@@ -62,4 +62,19 @@ export const adminProductService = {
 
   deleteProduct: (id: number) =>
     api.delete(`/admin/products/${id}`),
+
+  uploadImage: (productId: number, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api
+      .post<{ success: boolean; data: ProductDetailResponse }>(`/admin/products/${productId}/images`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data.data)
+  },
+
+  deleteImage: (productId: number, imageId: number) =>
+    api
+      .delete<{ success: boolean; data: ProductDetailResponse }>(`/admin/products/${productId}/images/${imageId}`)
+      .then((r) => r.data.data),
 }

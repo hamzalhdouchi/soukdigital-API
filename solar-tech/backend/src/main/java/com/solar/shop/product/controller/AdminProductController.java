@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/admin/products")
@@ -53,5 +55,21 @@ public class AdminProductController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         adminProductService.softDelete(id);
+    }
+
+    @PostMapping(value = "/{id}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<ProductDetailResponse> uploadImage(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return ApiResponse.ok(adminProductService.addImage(id, file), "Image ajoutée");
+    }
+
+    @DeleteMapping("/{id}/images/{imageId}")
+    public ApiResponse<ProductDetailResponse> deleteImage(
+            @PathVariable Long id,
+            @PathVariable Long imageId
+    ) {
+        return ApiResponse.ok(adminProductService.deleteImage(id, imageId));
     }
 }
